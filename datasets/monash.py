@@ -78,8 +78,7 @@ class Dataset(BaseDataset):
 
     name = "Monash"
 
-    # aeon is already a requirement of the objective
-    requirements = []
+    requirements = ["pip::aeon"]
 
     parameters = {
         "dataset_name": ["m1_yearly_dataset"],
