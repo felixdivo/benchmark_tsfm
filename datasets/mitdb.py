@@ -189,7 +189,7 @@ class Dataset(BaseDataset):
 
     name = "MITDB"
 
-    requirements = ["wfdb>=4.3.1"]
+    requirements = ["pip::wfdb>=4.3.1"]
 
     parameters = {
         "record_ids": ["all"],
