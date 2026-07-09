@@ -21,9 +21,9 @@ class _DummyEncoder(UnpooledEncoder):
     def encode(self, x):
         x = np.asarray(x)
         B = 1 if x.ndim == 2 else x.shape[0]
-        return np.arange(
-            B * self.T_tok * self.C * self.D, dtype=np.float32
-        ).reshape(B, self.T_tok, self.C, self.D)
+        return np.arange(B * self.T_tok * self.C * self.D, dtype=np.float32).reshape(
+            B, self.T_tok, self.C, self.D
+        )
 
 
 @pytest.fixture

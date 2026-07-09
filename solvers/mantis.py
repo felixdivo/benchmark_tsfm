@@ -53,7 +53,7 @@ class Solver(BaseTSFMSolver):
 
     def _prepare_inputs(self, X_batch):
         """Interpolate to ``interpolate_to`` and transpose to (N, C, T)."""
-        X_in = X_batch.transpose(0, 2, 1)       # (N, T, C) → (N, C, T)
+        X_in = X_batch.transpose(0, 2, 1)  # (N, T, C) → (N, C, T)
         target_len = int(self.interpolate_to)
         if X_in.shape[-1] != target_len:
             tensor = torch.tensor(X_in, dtype=torch.float32)
@@ -75,12 +75,12 @@ class Solver(BaseTSFMSolver):
             batch = inputs[i : i + self.batch_size]
             X_batch = np.stack(
                 [inp.float().cpu().numpy() for inp in batch]
-            )                                    # (B, T, C)
-            X_prepared = self._prepare_inputs(X_batch)   # (B, C, T_interp)
+            )  # (B, T, C)
+            X_prepared = self._prepare_inputs(X_batch)  # (B, C, T_interp)
             with torch.no_grad():
                 emb = np.asarray(
                     self.model.transform(X_prepared), dtype=np.float32
-                )                                # (B, D)
+                )  # (B, D)
             for row in emb:
                 results.append(torch.from_numpy(row))
         return results

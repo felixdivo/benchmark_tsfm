@@ -93,8 +93,8 @@ class Solver(BaseTSFMSolver):
                 embeddings, _ = self.model.embed(context)  # list[(C, T_tok, D)]
             emb_np = torch.stack(list(embeddings))[0].float().cpu().numpy()
             # Reshape to (1, T_tok, C, D) to match pooler convention (..., T, V, D)
-            emb_4d = emb_np.transpose(1, 0, 2)[None]   # (1, T_tok, C, D)
-            pooled = pooler.pool(emb_4d)               # (1, C, D)
+            emb_4d = emb_np.transpose(1, 0, 2)[None]  # (1, T_tok, C, D)
+            pooled = pooler.pool(emb_4d)  # (1, C, D)
             results.append(
                 torch.from_numpy(pooled[0].reshape(-1).astype(np.float32))  # (C*D,)
             )

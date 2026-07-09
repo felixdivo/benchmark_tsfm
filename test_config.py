@@ -19,8 +19,7 @@ _CI_FLAKY_DATASETS = {"ucr", "mitdb"}
 def _skip_flaky_in_ci(name):
     if name.lower() in _CI_FLAKY_DATASETS and os.environ.get("CI"):
         pytest.skip(
-            f"{name} download is blocked/rate-limited from CI runners "
-            "(runs locally)."
+            f"{name} download is blocked/rate-limited from CI runners (runs locally)."
         )
 
 

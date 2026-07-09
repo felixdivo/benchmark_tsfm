@@ -71,7 +71,11 @@ class Objective(BaseObjective):
     test_config = {
         "dataset": {
             "name": [
-                "monash", "ucr", "yahoo", "mitdb", "dummy-classification",
+                "monash",
+                "ucr",
+                "yahoo",
+                "mitdb",
+                "dummy-classification",
             ],
             "debug": True,
         }

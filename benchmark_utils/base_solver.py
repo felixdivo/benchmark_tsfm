@@ -98,13 +98,13 @@ class _WindowedForecastAdapter(BaseTSFMAdapter):
                 series = series[:, None]
             T, C = series.shape
             for t in range(self.window_size, T - self.prediction_length + 1):
-                windows.append(series[t - self.window_size: t])
-                targets.append(series[t: t + self.prediction_length].flatten())
+                windows.append(series[t - self.window_size : t])
+                targets.append(series[t : t + self.prediction_length].flatten())
 
         if not windows:
             return self
-        embs = self.solver.embed(windows)                    # (N, D)
-        self._head = Ridge().fit(embs, np.stack(targets))    # targets: (N, H*C)
+        embs = self.solver.embed(windows)  # (N, D)
+        self._head = Ridge().fit(embs, np.stack(targets))  # targets: (N, H*C)
         return self
 
     def predict(
@@ -123,7 +123,7 @@ class _WindowedForecastAdapter(BaseTSFMAdapter):
             for cutoff_idx, cutoff in enumerate(cutoffs):
                 hist = series[:cutoff]
                 if len(hist) >= self.window_size:
-                    window = hist[-self.window_size:]
+                    window = hist[-self.window_size :]
                 else:
                     pad = np.zeros(
                         (self.window_size - len(hist), hist.shape[1]), dtype=np.float32
@@ -135,8 +135,8 @@ class _WindowedForecastAdapter(BaseTSFMAdapter):
         if not windows or self._head is None:
             return ForecastOutput(quantiles=[], quantile_levels=(0.5,))
 
-        embs = self.solver.embed(windows)   # (N, D)
-        preds = self._head.predict(embs)    # (N, H*C)
+        embs = self.solver.embed(windows)  # (N, D)
+        preds = self._head.predict(embs)  # (N, H*C)
 
         per_series = [
             np.empty((n_cutoffs, H, C, 1), dtype=np.float32)
@@ -178,8 +178,8 @@ class _TimeEmbedEventAdapter(BaseTSFMAdapter):
             T = len(labels)
             embs_all.append(self._align(emb, T))
             labels_all.append(np.asarray(labels))
-        X = np.concatenate(embs_all, axis=0)     # (sum T_i, D)
-        y = np.concatenate(labels_all, axis=0)   # (sum T_i,)
+        X = np.concatenate(embs_all, axis=0)  # (sum T_i, D)
+        y = np.concatenate(labels_all, axis=0)  # (sum T_i,)
         self._head = LogisticRegression(max_iter=1000).fit(X, y)
         return self
 
@@ -187,7 +187,7 @@ class _TimeEmbedEventAdapter(BaseTSFMAdapter):
         # x: (T, C) → scores: (T,) probabilities of the positive class
         x = np.asarray(x, dtype=np.float32)
         T = x.shape[0]
-        emb = self.solver.time_embed([x])[0]                # (T', D)
+        emb = self.solver.time_embed([x])[0]  # (T', D)
         return self._head.predict_proba(self._align(emb, T))[:, 1]
 
 
@@ -207,8 +207,8 @@ class _WindowedEventAdapter(BaseTSFMAdapter):
         """One zero-padded causal window per timestep."""
         T, C = series.shape
         padded = np.zeros((self.window_size - 1 + T, C), dtype=np.float32)
-        padded[self.window_size - 1:] = series
-        return [padded[t: t + self.window_size] for t in range(T)]
+        padded[self.window_size - 1 :] = series
+        return [padded[t : t + self.window_size] for t in range(T)]
 
     def fit(
         self, X_train: Sequence[np.ndarray], y_train: Sequence[np.ndarray]
@@ -222,7 +222,7 @@ class _WindowedEventAdapter(BaseTSFMAdapter):
                 all_windows.append(window)
                 all_labels.append(label)
 
-        embs = self.solver.embed(all_windows)                       # (N, D)
+        embs = self.solver.embed(all_windows)  # (N, D)
         self._head = LogisticRegression(max_iter=1000).fit(embs, np.array(all_labels))
         return self
 
@@ -231,8 +231,8 @@ class _WindowedEventAdapter(BaseTSFMAdapter):
         x = np.asarray(x, dtype=np.float32)
         if x.ndim == 1:
             x = x[:, None]
-        embs = self.solver.embed(self._causal_windows(x))   # (T, D)
-        return self._head.predict_proba(embs)[:, 1]          # (T,)
+        embs = self.solver.embed(self._causal_windows(x))  # (T, D)
+        return self._head.predict_proba(embs)[:, 1]  # (T,)
 
 
 # ---------------------------------------------------------------------------
@@ -504,8 +504,7 @@ class BaseTSFMSolver(BaseSolver):
         ``functools.cached_property`` instead.
         """
         raise NotImplementedError(
-            f"{self.name} must implement quantile_levels "
-            "to support forecasting"
+            f"{self.name} must implement quantile_levels to support forecasting"
         )
 
     def forecast_batch(
@@ -585,9 +584,7 @@ class BaseTSFMSolver(BaseSolver):
         # Get a list of model outputs aligned with inputs
         raw = self.forecast_batch(inputs, covariates, prediction_length)
 
-        per_series_preds = [
-            [None] * n_cutoffs for _, n_cutoffs in per_series_shape
-        ]
+        per_series_preds = [[None] * n_cutoffs for _, n_cutoffs in per_series_shape]
         for (series_idx, cutoff_idx), pred in zip(layout, raw):
             per_series_preds[series_idx][cutoff_idx] = pred.float().cpu().numpy()
 

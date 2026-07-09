@@ -1,4 +1,3 @@
-
 from benchopt import BaseDataset
 
 from benchmark_utils.download import fetch_tsb_uad, load_data_tsb_uad

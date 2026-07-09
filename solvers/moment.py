@@ -73,10 +73,8 @@ class Solver(BaseTSFMSolver):
         results = []
         for inp in inputs:
             # inp: (T, C) — Moment expects (1, C, T)
-            x_enc = inp.float().T.unsqueeze(0).to(device)   # (1, C, T)
-            input_mask = torch.ones(
-                1, inp.shape[0], dtype=torch.float32, device=device
-            )
+            x_enc = inp.float().T.unsqueeze(0).to(device)  # (1, C, T)
+            input_mask = torch.ones(1, inp.shape[0], dtype=torch.float32, device=device)
 
             with torch.no_grad():
                 outputs = self.model.forecast(
@@ -89,14 +87,14 @@ class Solver(BaseTSFMSolver):
             if isinstance(forecast, tuple):
                 forecast = forecast[0]
 
-            arr = forecast.squeeze(0).float().cpu()          # (C, H) or (H,)
+            arr = forecast.squeeze(0).float().cpu()  # (C, H) or (H,)
             if arr.ndim == 1:
-                arr = arr.unsqueeze(-1)                      # (H, 1)
+                arr = arr.unsqueeze(-1)  # (H, 1)
             elif arr.shape[0] != prediction_length:
-                arr = arr.T                                  # (H, C)
+                arr = arr.T  # (H, C)
             arr = arr[:prediction_length]
 
-            results.append(arr.unsqueeze(-1))                # (H, C, 1)
+            results.append(arr.unsqueeze(-1))  # (H, C, 1)
         return results
 
     def embed_batch(self, inputs):
@@ -105,19 +103,17 @@ class Solver(BaseTSFMSolver):
         results = []
         for inp in inputs:
             # inp: (T, C) — Moment expects (1, C, T)
-            x_enc = inp.float().T.unsqueeze(0).to(device)   # (1, C, T)
+            x_enc = inp.float().T.unsqueeze(0).to(device)  # (1, C, T)
 
             with torch.no_grad():
                 outputs = self.model.embed(x_enc=x_enc, reduction="none")
-                emb = outputs.embeddings                     # (1, C, n_patches, D)
+                emb = outputs.embeddings  # (1, C, n_patches, D)
 
             if isinstance(emb, torch.Tensor):
                 emb = emb.cpu().numpy()
 
             # (1, C, n_patches, D) → (1, n_patches, C, D) to match pooler convention
             emb_4d = emb.transpose(0, 2, 1, 3)
-            pooled = pooler.pool(emb_4d)                     # (1, C, D)
-            results.append(
-                torch.from_numpy(pooled[0].reshape(-1).astype(np.float32))
-            )
+            pooled = pooler.pool(emb_4d)  # (1, C, D)
+            results.append(torch.from_numpy(pooled[0].reshape(-1).astype(np.float32)))
         return results

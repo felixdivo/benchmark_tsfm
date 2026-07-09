@@ -80,11 +80,11 @@ class Solver(BaseTSFMSolver):
         layout: list[tuple[int, int]] = []  # (inp_idx, channel_idx)
 
         for inp_idx, inp in enumerate(inputs):
-            x = inp.float().cpu()                    # (T, C)
+            x = inp.float().cpu()  # (T, C)
             if x.ndim == 1:
                 x = x.unsqueeze(-1)
             for c in range(x.shape[1]):
-                univariate.append(x[:, c])           # (T,)
+                univariate.append(x[:, c])  # (T,)
                 layout.append((inp_idx, c))
 
         # Seed before sampling: Chronos v1 is non-deterministic by default.
@@ -122,18 +122,16 @@ class Solver(BaseTSFMSolver):
         pooler = POOLERS[self.pooler]()
         results = []
         for inp in inputs:
-            x = inp.float().cpu().numpy()            # (T, C)
+            x = inp.float().cpu().numpy()  # (T, C)
             if x.ndim == 1:
                 x = x[:, None]
             # Flatten channels into batch axis (pipeline is univariate)
-            flat = torch.from_numpy(x.T.copy())     # (C, T)
+            flat = torch.from_numpy(x.T.copy())  # (C, T)
             with torch.no_grad():
-                emb, _ = self.model.embed(flat)      # (C, T_tok, D)
+                emb, _ = self.model.embed(flat)  # (C, T_tok, D)
             emb_np = emb.float().cpu().numpy()
             # (C, T_tok, D) → (1, T_tok, C, D) to match pooler convention
             emb_4d = emb_np.transpose(1, 0, 2)[None]
-            pooled = pooler.pool(emb_4d)             # (1, C, D)
-            results.append(
-                torch.from_numpy(pooled[0].reshape(-1).astype(np.float32))
-            )
+            pooled = pooler.pool(emb_4d)  # (1, C, D)
+            results.append(torch.from_numpy(pooled[0].reshape(-1).astype(np.float32)))
         return results

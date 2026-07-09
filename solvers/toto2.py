@@ -69,16 +69,14 @@ class Solver(BaseTSFMSolver):
         device = next(self.model.parameters()).device
         results = []
         for inp in inputs:
-            x = inp.float().cpu().numpy()                # (T, C)
+            x = inp.float().cpu().numpy()  # (T, C)
             if self.context_length is not None:
-                x = x[-self.context_length:]
+                x = x[-self.context_length :]
 
             # Toto expects (B, C, T)
-            target_np = x.T[None]                        # (1, C, T)
+            target_np = x.T[None]  # (1, C, T)
             finite_mask_np = np.isfinite(target_np)
-            target_np = np.nan_to_num(
-                target_np, nan=0.0, posinf=0.0, neginf=0.0
-            )
+            target_np = np.nan_to_num(target_np, nan=0.0, posinf=0.0, neginf=0.0)
 
             pad_len = (-target_np.shape[-1]) % self.patch_size
             if pad_len:
@@ -117,12 +115,12 @@ class Solver(BaseTSFMSolver):
         device = next(self.model.parameters()).device
         results = []
         for inp in inputs:
-            x = inp.float().cpu().numpy()                # (T, C)
+            x = inp.float().cpu().numpy()  # (T, C)
             if self.context_length is not None:
-                x = x[-self.context_length:]
+                x = x[-self.context_length :]
 
             # Toto expects (B, C, T)
-            batch = x.T[None]                            # (1, C, T)
+            batch = x.T[None]  # (1, C, T)
             mask = np.isfinite(batch)
             batch = np.nan_to_num(batch, nan=0.0, posinf=0.0, neginf=0.0)
 
@@ -166,8 +164,6 @@ class Solver(BaseTSFMSolver):
 
             # (1, C, T_patch, D) → (1, T_patch, C, D) to match pooler convention
             emb_np = captured["h"].transpose(1, 2).float().cpu().numpy()
-            pooled = pooler.pool(emb_np)                 # (1, C, D)
-            results.append(
-                torch.from_numpy(pooled[0].reshape(-1).astype(np.float32))
-            )
+            pooled = pooler.pool(emb_np)  # (1, C, D)
+            results.append(torch.from_numpy(pooled[0].reshape(-1).astype(np.float32)))
         return results
