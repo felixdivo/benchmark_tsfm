@@ -1,4 +1,3 @@
-
 from benchopt import BaseDataset
 
 from benchmark_utils.download import fetch_tsb_uad, load_data_tsb_uad
@@ -38,5 +37,5 @@ class Dataset(BaseDataset):
             y_test=y_test,
             X_test=X_test,
             task="anomaly_detection",
-            metrics=AD_METRICS.keys(),
+            metrics=list(AD_METRICS.keys()),
         )
