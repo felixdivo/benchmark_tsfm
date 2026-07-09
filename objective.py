@@ -18,7 +18,9 @@ All datasets must return (via ``get_data``):
 
 Task-specific shapes
 --------------------
-forecasting        X_test         List[(T_i, C)]  full series — adapter uses
+forecasting        y_train        None — solvers carve fine-tuning
+                                  windows out of X_train themselves
+                   X_test         List[(T_i, C)]  full series — adapter uses
                                                   ``x[:cutoff]`` as history
                    cutoff_indexes List[List[int]] jagged per-series cutoffs
                    y_test         List[(n_cutoffs, H, C)]
@@ -108,6 +110,20 @@ class Objective(BaseObjective):
         self.task = task
         self.metrics = metrics
         self.meta = meta  # freq, prediction_length, n_classes, …
+
+    def skip(self, **data):
+        """Honor a ``_skip_reason`` field set by the dataset.
+
+        Datasets that want to filter their own parameter grid (e.g.
+        :mod:`datasets.gifteval` skipping non-leaderboard (path, term)
+        combos) return ``dict(_skip_reason="...")`` from ``get_data()``.
+        benchopt calls this hook *before* ``set_data`` and returns early
+        on skip, so no other data field is needed or consumed.
+        """
+        reason = data.get("_skip_reason")
+        if reason:
+            return True, reason
+        return False, None
 
     # ------------------------------------------------------------------
     # Passed to the solver
