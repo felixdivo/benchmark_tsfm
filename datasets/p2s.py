@@ -1,12 +1,8 @@
 """P2S (Production Press Sensor Data) time series classification dataset.
 
-Wraps the gated ``AIML-TUDA/P2S`` Hugging Face dataset (Normal variant): binary
+Wraps the ``AIML-TUDA/P2S`` Hugging Face dataset (Normal variant): binary
 classification of whether a deep-drawing press run produced a normal (``0``) or
 defective (``1``) part from its 4096-step force-sensor series.
-
-This dataset is gated: reading it requires accepting the terms on the Hub and a
-Hugging Face token in the environment (``HF_TOKEN`` or a cached
-``huggingface-cli login``).
 
 Data contract output
 --------------------

@@ -12,9 +12,8 @@ import pytest
 
 # These datasets load fine locally, but their download hosts block / rate-limit
 # CI runners (ucr: timeseriesclassification.com -> HTTP 401; mitdb: download
-# timeout) or require credentials CI does not have (p2s: gated Hugging Face
-# dataset needing an HF token). So we run them locally and skip them *only in CI*.
-_CI_FLAKY_DATASETS = {"ucr", "mitdb", "p2s"}
+# timeout). So we run them locally and skip them *only in CI*.
+_CI_FLAKY_DATASETS = {"ucr", "mitdb"}
 
 
 def _skip_flaky_in_ci(name):
